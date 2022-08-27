@@ -95,7 +95,7 @@ class AdminUser : Persistable<String> {
 		return this.ID.isNotBlank()
 	}
 
-	override fun getId(): String? {
+	override fun getId(): String {
 		return this.ID
 	}
 }
