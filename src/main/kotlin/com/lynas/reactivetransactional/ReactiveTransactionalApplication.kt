@@ -47,12 +47,12 @@ class AllUserService(
 	@Transactional
 	suspend fun saveAdminAndAppUser(){
 		appUserService.saveAppUser(AppUser().also {
-			it.identity = UUID.randomUUID().toString()
+			it.ID = UUID.randomUUID().toString()
 			it.name = "Name ${System.currentTimeMillis()}"
 			it.tag = "Tag ${System.currentTimeMillis()}"
 		})
 		adminUserService.saveAdminUser(AdminUser().also {
-			it.identity = UUID.randomUUID().toString()
+			it.ID = UUID.randomUUID().toString()
 			it.tag = "Tag ${System.currentTimeMillis()}"
 		})
 	}
@@ -65,8 +65,7 @@ class AllUserService(
 class AppUser : Persistable<String> {
 
 	@Id
-	@Column("id")
-	var identity: String? = ""
+	var ID: String = UUID.randomUUID().toString()
 
 	@Column
 	lateinit var name: String
@@ -76,29 +75,28 @@ class AppUser : Persistable<String> {
 
 
 	override fun isNew(): Boolean {
-		return this.identity != null
+		return this.ID.isNotBlank()
 	}
 
-	override fun getId(): String? {
-		return this.identity
+	override fun getId(): String {
+		return this.ID
 	}
 }
 
 @Table(name = "admin_user")
 class AdminUser : Persistable<String> {
 	@Id
-	@Column("id")
-	var identity: String? = ""
+	var ID: String = UUID.randomUUID().toString()
 
 	@Column
 	lateinit var tag: String
 
 	override fun isNew(): Boolean {
-		return this.id != null
+		return this.ID.isNotBlank()
 	}
 
 	override fun getId(): String? {
-		return this.identity
+		return this.ID
 	}
 }
 
