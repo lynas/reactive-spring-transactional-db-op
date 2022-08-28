@@ -18,96 +18,98 @@ import java.util.*
 class ReactiveTransactionalApplication
 
 fun main(args: Array<String>) {
-	runApplication<ReactiveTransactionalApplication>(*args)
+    runApplication<ReactiveTransactionalApplication>(*args)
 }
 
 @Service
 class AdminUserService(val adminUserRepo: AdminUserRepo) {
 
-	suspend fun saveAdminUser(adminUser: AdminUser) {
+    suspend fun saveAdminUser(adminUser: AdminUser) {
 		throw RuntimeException("Test")
-		adminUserRepo.save(adminUser).awaitFirst()
-	}
+        adminUserRepo.save(adminUser).awaitFirst()
+    }
 
 }
 
 @Service
 class AppUserService(val appUserRepo: AppUserRepo) {
-	suspend fun saveAppUser(appUser: AppUser) {
-		appUserRepo.save(appUser).awaitFirst()
-	}
+    suspend fun saveAppUser(appUser: AppUser) {
+        appUserRepo.save(appUser).awaitFirst()
+    }
 }
 
 @Service
 class AllUserService(
-	val appUserService: AppUserService,
-	val adminUserService: AdminUserService
-){
+    val appUserService: AppUserService,
+    val adminUserService: AdminUserService
+) {
 
-	@Transactional
-	suspend fun saveAdminAndAppUser(){
-		appUserService.saveAppUser(AppUser().also {
-			it.ID = UUID.randomUUID().toString()
-			it.name = "Name ${System.currentTimeMillis()}"
-			it.tag = "Tag ${System.currentTimeMillis()}"
-		})
-		adminUserService.saveAdminUser(AdminUser().also {
-			it.ID = UUID.randomUUID().toString()
-			it.tag = "Tag ${System.currentTimeMillis()}"
-		})
-	}
+    @Transactional
+    suspend fun saveAdminAndAppUser() {
+        appUserService.saveAppUser(AppUser().also {
+            it.name = "Name ${System.currentTimeMillis()}"
+            it.tag = "Tag ${System.currentTimeMillis()}"
+        })
+        adminUserService.saveAdminUser(AdminUser().also {
+            it.tag = "Tag ${System.currentTimeMillis()}"
+        })
+    }
 
 }
 
 
 @Table(name = "app_user")
-
-class AppUser : Persistable<String> {
-
-	@Id
-	var ID: String = UUID.randomUUID().toString()
-
-	@Column
-	lateinit var name: String
-
-	@Column
-	lateinit var tag: String
+class AppUser(
+    @Id
+    @JvmField
+    val id: String = UUID.randomUUID().toString()
+) : Persistable<String> {
 
 
-	override fun isNew(): Boolean {
-		return this.ID.isNotBlank()
-	}
+    @Column
+    lateinit var name: String
 
-	override fun getId(): String {
-		return this.ID
-	}
+    @Column
+    lateinit var tag: String
+
+
+    override fun isNew(): Boolean {
+        return this.id.isNotBlank()
+    }
+
+    override fun getId(): String {
+        return this.id
+    }
 }
 
 @Table(name = "admin_user")
-class AdminUser : Persistable<String> {
-	@Id
-	var ID: String = UUID.randomUUID().toString()
+class AdminUser(
+    @Id
+    @JvmField
+    val id: String = UUID.randomUUID().toString()
+) : Persistable<String> {
 
-	@Column
-	lateinit var tag: String
 
-	override fun isNew(): Boolean {
-		return this.ID.isNotBlank()
-	}
+    @Column
+    lateinit var tag: String
 
-	override fun getId(): String {
-		return this.ID
-	}
+    override fun isNew(): Boolean {
+        return this.id.isNotBlank()
+    }
+
+    override fun getId(): String {
+        return this.id
+    }
 }
 
 interface AppUserRepo : ReactiveCrudRepository<AppUser, String>
 interface AdminUserRepo : ReactiveCrudRepository<AdminUser, String>
 
 @RestController
-class DemoController(val allUserService: AllUserService){
+class DemoController(val allUserService: AllUserService) {
 
-	@GetMapping("/save")
-	suspend fun demo(){
-		allUserService.saveAdminAndAppUser()
-	}
+    @GetMapping("/save")
+    suspend fun demo() {
+        allUserService.saveAdminAndAppUser()
+    }
 }
